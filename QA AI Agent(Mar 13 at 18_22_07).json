@@ -1,0 +1,374 @@
+{
+  "updatedAt": "2026-03-13T12:52:07.581Z",
+  "createdAt": "2026-03-13T12:01:37.435Z",
+  "id": "kCZC1iUjv4PXx3yn",
+  "name": "QA AI Agent",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "availableInChat": true,
+        "agentName": "QA Chatbot",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "97de5c78-7457-459b-acf7-b4ea7edca5d3",
+      "name": "When chat message received",
+      "webhookId": "e11f7c63-fe5d-486d-ae2e-a210ef685464"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful Q&A assistant that answers questions based on feedback data. Use tools to search for relevant information by querying the 'question' and 'tags' columns. When a user asks a question, search the QA database to find matching questions or relevant tags, then provide the corresponding answer. If you find multiple relevant entries, synthesize the information. If no relevant information is found, politely inform the user that you don't have that information in the QA database"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "dd778c3b-6b02-4c43-8203-73be30d09501",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        112,
+        160
+      ],
+      "id": "7ec45e1d-7a14-49d3-980a-55b6dc32abbf",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "Cu3vxkzJ95PXTX15",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        160
+      ],
+      "id": "846ac88c-8573-4e24-958f-6e01d4e8fc42",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to search the Feedback data table for relevant entries. Provide a search query that will be matched against the 'question' column to find relevant feedback. The tool returns matching entries with their answers. Always provide a specific search term based on what the user is asking about.",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "Zx3erBQ4DiSOh6n1",
+          "mode": "list",
+          "cachedResultName": "q&a",
+          "cachedResultUrl": "/projects/hlU7fCOplf6Dfj8p/datatables/Zx3erBQ4DiSOh6n1"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "question",
+              "condition": "ilike",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Value', `the search term or question to look for in the feedback database. filters by question containing your search term so use single words or short fragments`, 'string') }}"
+            },
+            {
+              "keyName": "tags",
+              "condition": "ilike",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions1_Value', `key terms for this question:answer pair that was classified by AI. use one search term per tool invocation`, 'string') }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        160
+      ],
+      "id": "0b6b57bd-19cf-46d9-9b9e-72713415e574",
+      "name": "fetch-qa-from-db"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fetch-qa-from-db": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "9841757b-7277-47e9-84ab-991e1cdbf8eb",
+  "activeVersionId": "9841757b-7277-47e9-84ab-991e1cdbf8eb",
+  "versionCounter": 63,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-13T12:01:37.441Z",
+      "createdAt": "2026-03-13T12:01:37.441Z",
+      "role": "workflow:owner",
+      "workflowId": "kCZC1iUjv4PXx3yn",
+      "projectId": "hlU7fCOplf6Dfj8p",
+      "project": {
+        "updatedAt": "2026-03-13T09:53:31.306Z",
+        "createdAt": "2026-03-13T09:51:46.360Z",
+        "id": "hlU7fCOplf6Dfj8p",
+        "name": "Srijita Dasgupta <srijitadasgupta11@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "f229498a-ee49-4d66-bea4-a60531a13602"
+      }
+    }
+  ],
+  "tags": [],
+  "parentFolder": null,
+  "activeVersion": {
+    "updatedAt": "2026-03-13T12:52:17.000Z",
+    "createdAt": "2026-03-13T12:52:07.583Z",
+    "versionId": "9841757b-7277-47e9-84ab-991e1cdbf8eb",
+    "workflowId": "kCZC1iUjv4PXx3yn",
+    "nodes": [
+      {
+        "parameters": {
+          "availableInChat": true,
+          "agentName": "QA Chatbot",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "id": "97de5c78-7457-459b-acf7-b4ea7edca5d3",
+        "name": "When chat message received",
+        "webhookId": "e11f7c63-fe5d-486d-ae2e-a210ef685464"
+      },
+      {
+        "parameters": {
+          "options": {
+            "systemMessage": "You are a helpful Q&A assistant that answers questions based on feedback data. Use tools to search for relevant information by querying the 'question' and 'tags' columns. When a user asks a question, search the QA database to find matching questions or relevant tags, then provide the corresponding answer. If you find multiple relevant entries, synthesize the information. If no relevant information is found, politely inform the user that you don't have that information in the QA database"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          208,
+          0
+        ],
+        "id": "dd778c3b-6b02-4c43-8203-73be30d09501",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "model": "llama-3.1-8b-instant",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+        "typeVersion": 1,
+        "position": [
+          112,
+          160
+        ],
+        "id": "7ec45e1d-7a14-49d3-980a-55b6dc32abbf",
+        "name": "Groq Chat Model",
+        "credentials": {
+          "groqApi": {
+            "id": "Cu3vxkzJ95PXTX15",
+            "name": "Groq account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          256,
+          160
+        ],
+        "id": "846ac88c-8573-4e24-958f-6e01d4e8fc42",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "Use this tool to search the Feedback data table for relevant entries. Provide a search query that will be matched against the 'question' column to find relevant feedback. The tool returns matching entries with their answers. Always provide a specific search term based on what the user is asking about.",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "value": "Zx3erBQ4DiSOh6n1",
+            "mode": "list",
+            "cachedResultName": "q&a",
+            "cachedResultUrl": "/projects/hlU7fCOplf6Dfj8p/datatables/Zx3erBQ4DiSOh6n1"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "question",
+                "condition": "ilike",
+                "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Value', `the search term or question to look for in the feedback database. filters by question containing your search term so use single words or short fragments`, 'string') }}"
+              },
+              {
+                "keyName": "tags",
+                "condition": "ilike",
+                "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions1_Value', `key terms for this question:answer pair that was classified by AI. use one search term per tool invocation`, 'string') }}"
+              }
+            ]
+          },
+          "returnAll": true
+        },
+        "type": "n8n-nodes-base.dataTableTool",
+        "typeVersion": 1.1,
+        "position": [
+          400,
+          160
+        ],
+        "id": "0b6b57bd-19cf-46d9-9b9e-72713415e574",
+        "name": "fetch-qa-from-db"
+      }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Groq Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "fetch-qa-from-db": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Srijita Dasgupta",
+    "name": "v2",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-13T12:52:17.598Z",
+        "id": 4,
+        "workflowId": "kCZC1iUjv4PXx3yn",
+        "versionId": "9841757b-7277-47e9-84ab-991e1cdbf8eb",
+        "event": "activated",
+        "userId": "f229498a-ee49-4d66-bea4-a60531a13602"
+      }
+    ]
+  },
+  "scopes": [
+    "workflow:create",
+    "workflow:delete",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update",
+    "workflow:updateRedactionSetting"
+  ],
+  "checksum": "53df916612d7c47754588e9a0a465174e750c4abc1df195e669105843c416e7f"
+}

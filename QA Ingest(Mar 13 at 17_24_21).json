@@ -1,0 +1,796 @@
+{
+  "updatedAt": "2026-03-13T12:00:57.831Z",
+  "createdAt": "2026-03-13T10:53:18.728Z",
+  "id": "BwKiBXRTHpfZVPyg",
+  "name": "QA Ingest",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "QA Submission",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "Email"
+            },
+            {
+              "fieldLabel": "Question"
+            },
+            {
+              "fieldLabel": "Answer",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        16,
+        0
+      ],
+      "id": "33aae8c0-fa27-4176-91a7-bbeea836765b",
+      "name": "On form submission",
+      "webhookId": "1f87aaa3-b3ad-417f-a4f7-2356f94e934a"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d99acbbe-e3a5-4b1f-a9bd-d5e5741e03dc",
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": "n8n.io",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "12efcd8f-0a6d-443c-83f1-7a17af64ce12",
+      "name": "is n8n.io email?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0dd5a56c-72c3-4f3e-bf75-771212775f3d",
+              "name": "isTrusted",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        -96
+      ],
+      "id": "5a1a24ce-6e4c-4cf3-bb3c-8101e1d43579",
+      "name": "isTrusted: true"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0dd5a56c-72c3-4f3e-bf75-771212775f3d",
+              "name": "isTrusted",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        96
+      ],
+      "id": "1d1d19f9-2b8a-437a-ad3a-8f1da39588be",
+      "name": "isTrusted: false"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        640,
+        0
+      ],
+      "id": "8e139d65-1548-48da-9e72-946bf2ea3399",
+      "name": "ref"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=analyse the following question and answer and output relevant tags\n\nQuestion: {{ $json.Question }}\nAnswer: {{ $json.Answer }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a content tagging expert. Your task is to analyze Question and Answer submissions and generate relevant, descriptive tags that categorize the content based on topic, key concepts, and technical terms. Always provide 4-8 tags as a comma separated list. Keep tags short and focused in individual length.\n\nExample Output:\npartner, partnerships, agency, external contractors, lead referral"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        848,
+        0
+      ],
+      "id": "b0b30601-7dcf-4f51-8f9f-64d6ee4f4478",
+      "name": "add tags"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        848,
+        160
+      ],
+      "id": "d3511faa-5717-4faf-979d-43a83a07dee2",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "Cu3vxkzJ95PXTX15",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "Zx3erBQ4DiSOh6n1",
+          "mode": "list",
+          "cachedResultName": "q&a",
+          "cachedResultUrl": "/projects/hlU7fCOplf6Dfj8p/datatables/Zx3erBQ4DiSOh6n1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "isTrusted": "={{ $('ref').item.json.isTrusted }}",
+            "tags": "={{ $json.text }}",
+            "name": "={{ $('ref').item.json.Name }}",
+            "email": "={{ $('ref').item.json.Email }}",
+            "question": "={{ $('ref').item.json.Question }}",
+            "answer": "={{ $('ref').item.json.Answer }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "question",
+              "displayName": "question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "answer",
+              "displayName": "answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "isTrusted",
+              "displayName": "isTrusted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "12daa942-0149-4d3a-90d3-20cc923c08a6",
+      "name": "Insert row"
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "is n8n.io email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is n8n.io email?": {
+      "main": [
+        [
+          {
+            "node": "isTrusted: true",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "isTrusted: false",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "isTrusted: true": {
+      "main": [
+        [
+          {
+            "node": "ref",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "isTrusted: false": {
+      "main": [
+        [
+          {
+            "node": "ref",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ref": {
+      "main": [
+        [
+          {
+            "node": "add tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "add tags",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "add tags": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Name": "Sdg",
+          "Email": "srijita.n8n.io",
+          "Question": "hey?",
+          "Answer": "hi",
+          "submittedAt": "2026-03-13T07:06:29.822-04:00",
+          "formMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "549f5054-b2f6-4e2b-aede-38b4bbd10416",
+  "activeVersionId": "549f5054-b2f6-4e2b-aede-38b4bbd10416",
+  "versionCounter": 95,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-13T10:53:18.736Z",
+      "createdAt": "2026-03-13T10:53:18.736Z",
+      "role": "workflow:owner",
+      "workflowId": "BwKiBXRTHpfZVPyg",
+      "projectId": "hlU7fCOplf6Dfj8p",
+      "project": {
+        "updatedAt": "2026-03-13T09:53:31.306Z",
+        "createdAt": "2026-03-13T09:51:46.360Z",
+        "id": "hlU7fCOplf6Dfj8p",
+        "name": "Srijita Dasgupta <srijitadasgupta11@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "f229498a-ee49-4d66-bea4-a60531a13602"
+      }
+    }
+  ],
+  "tags": [],
+  "parentFolder": null,
+  "activeVersion": {
+    "updatedAt": "2026-03-13T11:59:19.000Z",
+    "createdAt": "2026-03-13T11:54:21.821Z",
+    "versionId": "549f5054-b2f6-4e2b-aede-38b4bbd10416",
+    "workflowId": "BwKiBXRTHpfZVPyg",
+    "nodes": [
+      {
+        "parameters": {
+          "formTitle": "QA Submission",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "Name"
+              },
+              {
+                "fieldLabel": "Email"
+              },
+              {
+                "fieldLabel": "Question"
+              },
+              {
+                "fieldLabel": "Answer",
+                "fieldType": "textarea"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.5,
+        "position": [
+          16,
+          0
+        ],
+        "id": "33aae8c0-fa27-4176-91a7-bbeea836765b",
+        "name": "On form submission",
+        "webhookId": "1f87aaa3-b3ad-417f-a4f7-2356f94e934a"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "d99acbbe-e3a5-4b1f-a9bd-d5e5741e03dc",
+                "leftValue": "={{ $json.Email }}",
+                "rightValue": "n8n.io",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          208,
+          0
+        ],
+        "id": "12efcd8f-0a6d-443c-83f1-7a17af64ce12",
+        "name": "is n8n.io email?"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "0dd5a56c-72c3-4f3e-bf75-771212775f3d",
+                "name": "isTrusted",
+                "value": true,
+                "type": "boolean"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          416,
+          -96
+        ],
+        "id": "5a1a24ce-6e4c-4cf3-bb3c-8101e1d43579",
+        "name": "isTrusted: true"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "0dd5a56c-72c3-4f3e-bf75-771212775f3d",
+                "name": "isTrusted",
+                "value": false,
+                "type": "boolean"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          432,
+          96
+        ],
+        "id": "1d1d19f9-2b8a-437a-ad3a-8f1da39588be",
+        "name": "isTrusted: false"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          640,
+          0
+        ],
+        "id": "8e139d65-1548-48da-9e72-946bf2ea3399",
+        "name": "ref"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=analyse the following question and answer and output relevant tags\n\nQuestion: {{ $json.Question }}\nAnswer: {{ $json.Answer }}",
+          "messages": {
+            "messageValues": [
+              {
+                "message": "You are a content tagging expert. Your task is to analyze Question and Answer submissions and generate relevant, descriptive tags that categorize the content based on topic, key concepts, and technical terms. Always provide 4-8 tags as a comma separated list. Keep tags short and focused in individual length.\n\nExample Output:\npartner, partnerships, agency, external contractors, lead referral"
+              }
+            ]
+          },
+          "batching": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          848,
+          0
+        ],
+        "id": "b0b30601-7dcf-4f51-8f9f-64d6ee4f4478",
+        "name": "add tags"
+      },
+      {
+        "parameters": {
+          "model": "llama-3.1-8b-instant",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+        "typeVersion": 1,
+        "position": [
+          848,
+          160
+        ],
+        "id": "d3511faa-5717-4faf-979d-43a83a07dee2",
+        "name": "Groq Chat Model",
+        "credentials": {
+          "groqApi": {
+            "id": "Cu3vxkzJ95PXTX15",
+            "name": "Groq account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "dataTableId": {
+            "__rl": true,
+            "value": "Zx3erBQ4DiSOh6n1",
+            "mode": "list",
+            "cachedResultName": "q&a",
+            "cachedResultUrl": "/projects/hlU7fCOplf6Dfj8p/datatables/Zx3erBQ4DiSOh6n1"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "isTrusted": "={{ $('ref').item.json.isTrusted }}",
+              "tags": "={{ $json.text }}",
+              "name": "={{ $('ref').item.json.Name }}",
+              "email": "={{ $('ref').item.json.Email }}",
+              "question": "={{ $('ref').item.json.Question }}",
+              "answer": "={{ $('ref').item.json.Answer }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "name",
+                "displayName": "name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "email",
+                "displayName": "email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "question",
+                "displayName": "question",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "answer",
+                "displayName": "answer",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "tags",
+                "displayName": "tags",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "isTrusted",
+                "displayName": "isTrusted",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1200,
+          0
+        ],
+        "id": "12daa942-0149-4d3a-90d3-20cc923c08a6",
+        "name": "Insert row"
+      }
+    ],
+    "connections": {
+      "On form submission": {
+        "main": [
+          [
+            {
+              "node": "is n8n.io email?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "is n8n.io email?": {
+        "main": [
+          [
+            {
+              "node": "isTrusted: true",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "isTrusted: false",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "isTrusted: true": {
+        "main": [
+          [
+            {
+              "node": "ref",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "isTrusted: false": {
+        "main": [
+          [
+            {
+              "node": "ref",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ref": {
+        "main": [
+          [
+            {
+              "node": "add tags",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Groq Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "add tags",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "add tags": {
+        "main": [
+          [
+            {
+              "node": "Insert row",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Srijita Dasgupta",
+    "name": "v1",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-13T11:59:19.013Z",
+        "id": 1,
+        "workflowId": "BwKiBXRTHpfZVPyg",
+        "versionId": "549f5054-b2f6-4e2b-aede-38b4bbd10416",
+        "event": "activated",
+        "userId": "f229498a-ee49-4d66-bea4-a60531a13602"
+      }
+    ]
+  },
+  "scopes": [
+    "workflow:create",
+    "workflow:delete",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update",
+    "workflow:updateRedactionSetting"
+  ],
+  "checksum": "f0f4634a622fb90bd7966f3761a9be5e389387e5286be53e274a4d54e2a89ba6"
+}
